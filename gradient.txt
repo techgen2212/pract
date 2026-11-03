@@ -1,0 +1,47 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def function(x):
+    return (x + 3)**2
+
+def derivative(x):
+    return 2 * (x + 3)
+
+
+x = 2
+learning_rate = 0.1
+iterations = 50
+x_values = []
+y_values = []
+
+
+
+for i in range(iterations):
+
+    x_values.append(x)
+    y_values.append(function(x))
+
+    x = x - learning_rate * derivative(x)
+
+    print("Iteration:", i + 1, "x =", x, "y =", function(x))
+
+
+
+print("Local Minimum x =", x)
+print("Minimum value y =", function(x))
+
+
+x_range = np.linspace(-6, 3, 100)
+y_range = function(x_range)
+
+plt.plot(x_range, y_range, label="y = (x+3)^2")
+plt.scatter(x_values, y_values, color='red', label="Gradient Descent")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Gradient Descent Algorithm")
+plt.legend()
+plt.grid()
+plt.show()
+
+

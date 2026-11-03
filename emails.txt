@@ -1,0 +1,155 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+
+df = pd.read_csv("emails.csv")
+print(df.head())
+print(df.shape)
+
+
+
+print(df.isnull().sum().sum())
+
+
+df.dropna(inplace=True)
+
+df.drop(columns=['Email No.'], inplace=True, errors='ignore')
+print(df.head())
+print(df.shape)
+
+
+
+print(df.info())
+print(df['Prediction'].value_counts())
+
+
+
+X = df.drop('Prediction', axis=1)
+y = df['Prediction']
+print(X.head())
+print(y.head())
+
+
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+print("Training data:", X_train.shape)
+print("Testing data:", X_test.shape)
+
+
+
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+print("Feature scaling completed")
+
+
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+knn_pred = knn.predict(X_test)
+print("KNN Classification Completed")
+
+
+from sklearn.svm import SVC
+svm = SVC(kernel='linear')
+svm.fit(X_train, y_train)
+svm_pred = svm.predict(X_test)
+print("SVM Classification Completed")
+
+
+
+from sklearn.metrics import accuracy_score, precision_score
+from sklearn.metrics import recall_score, f1_score
+
+print("KNN Performance")
+print("Accuracy:", accuracy_score(y_test, knn_pred))
+print("Precision:", precision_score(y_test, knn_pred))
+print("Recall:", recall_score(y_test, knn_pred))
+print("F1 Score:", f1_score(y_test, knn_pred))
+
+
+print("SVM Performance")
+print("Accuracy:", accuracy_score(y_test, svm_pred))
+print("Precision:", precision_score(y_test, svm_pred))
+print("Recall:", recall_score(y_test, svm_pred))
+print("F1 Score:", f1_score(y_test, svm_pred))
+
+
+
+from sklearn.metrics import confusion_matrix
+
+cm = confusion_matrix(y_test, knn_pred)
+
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.title("KNN Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+
+
+
+cm = confusion_matrix(y_test, svm_pred)
+
+sns.heatmap(cm, annot=True, fmt='d', cmap='Greens')
+plt.title("SVM Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+
+
+
+results = pd.DataFrame({
+    'Model': ['KNN', 'SVM'],
+    'Accuracy': [
+        accuracy_score(y_test, knn_pred),
+        accuracy_score(y_test, svm_pred)
+    ],
+    'Precision': [
+        precision_score(y_test, knn_pred),
+        precision_score(y_test, svm_pred)
+    ],
+    'Recall': [
+        recall_score(y_test, knn_pred),
+        recall_score(y_test, svm_pred)
+    ],
+    'F1 Score': [
+        f1_score(y_test, knn_pred),
+        f1_score(y_test, svm_pred)
+    ]
+})
+print(results)
+
+
+
+results.set_index('Model').plot(
+    kind='bar',
+    figsize=(9, 5)
+)
+
+plt.title("KNN vs SVM Performance")
+plt.ylabel("Score")
+plt.ylim(0, 1)
+plt.xticks(rotation=0)
+plt.show()
+
+
+
+if accuracy_score(y_test, svm_pred) > accuracy_score(y_test, knn_pred):
+    print("SVM is the best model")
+elif accuracy_score(y_test, svm_pred) < accuracy_score(y_test, knn_pred):
+    print("KNN is the best model")
+else:
+    print("Both models have equal accuracy")
